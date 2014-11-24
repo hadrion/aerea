@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.hadrion.aerea.dominio.Cpf;
 import com.hadrion.aerea.dominio.Trecho;
+import com.hadrion.aerea.dominio.aviao.Aviao;
 import com.hadrion.aerea.dominio.aviao.AviaoId;
 
 public class Voo {
@@ -14,14 +15,16 @@ public class Voo {
 	private Trecho trecho;
 	private Date partida;
 	private AviaoId aviaoId;
+	private int assentosAviao;
 	
 	private Set<Reserva> reservas;
 	
-	public Voo(VooId vooId, Trecho trecho, Date partida, AviaoId aviaoId) {
+	public Voo(VooId vooId, Trecho trecho, Date partida, Aviao aviao) {
 		this.vooId = vooId;
 		this.trecho = trecho;
 		this.setPartida(partida);
-		this.aviaoId = aviaoId;
+		this.aviaoId = aviao.aviaoId();
+		this.assentosAviao = aviao.assentos();
 	}
 
 	public VooId vooId() {
@@ -48,6 +51,10 @@ public class Voo {
 	}
 
 	public Reserva novaReserva(int assentos, Cpf cpf) {
+		if (assentos > assentosDisponiveis())
+			throw new IllegalArgumentException(
+					"Quantidade a reservar excedeu a quantidade disponível.");
+		
 		Reserva reserva = new Reserva(assentos,cpf);
 		getReservas().add(reserva);
 		return reserva;
@@ -64,6 +71,10 @@ public class Voo {
 		if (reservas == null)
 			reservas = new HashSet<Reserva>();
 		return reservas;
+	}
+
+	public int assentosDisponiveis() {
+		return assentosAviao - assentosReservados();
 	}
 
 
